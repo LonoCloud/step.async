@@ -1,5 +1,6 @@
 (ns lonocloud.step.async.step
   "Implemenation of the step machine library."
+  (:refer-clojure :exclude [reduce map merge into take partition partition-by])
   (:require [clojure.core.async :as async]
             [clojure.core.async.impl.protocols :as async-protocols]
             [clojure.pprint :as pprint]
@@ -437,8 +438,8 @@
 (s/defn- notify-done [channels :- #{Channel}
                       done-message :- s/Keyword]
   (->> channels
-       (map #(do (async/>!! % done-message)
-                 (async/close! %)))
+       (clojure.core/map #(do (async/>!! % done-message)
+                              (async/close! %)))
        doall))
 
 (s/defn- check-done [location :- String
@@ -457,8 +458,8 @@
                                (step-channel/blocked-takes step-channels)))))
 
 (s/defn- pad [seq size pad-value]
-  (take size (into (vec seq)
-                   (take size (repeat pad-value)))))
+  (clojure.core/take size (clojure.core/into (vec seq)
+                                             (clojure.core/take size (repeat pad-value)))))
 
 (s/defn- at-breakpoint? [machine listener-map]
   (->> (step-listen/breakpoints listener-map)
@@ -555,8 +556,8 @@
         (alter machine-log step-log/record-done-state status)
         (let [to-notify (if (= status :more-steps)
                           (step-listen/take-listeners @listeners :step-listeners)
-                          (into (step-listen/take-listeners @listeners :step-listeners)
-                                (step-listen/take-listeners @listeners :quiesce-listeners)))]
+                          (clojure.core/into (step-listen/take-listeners @listeners :step-listeners)
+                                             (step-listen/take-listeners @listeners :quiesce-listeners)))]
           (if (= status :more-steps)
             (alter listeners step-listen/clear-listeners :step-listeners)
             (do
@@ -570,27 +571,27 @@
   (input-args [this args channel-sizes channel-unblocking channel-names]
     (when (not (empty? args))
       (let [default-channel-size 0
-            channels-to-add (->> (map (fn [a s u n]
-                                        (when (channel? a)
-                                          [a s u n]))
-                                      args
-                                      (pad channel-sizes (count args) default-channel-size)
-                                      (pad channel-unblocking (count args) nil)
-                                      (pad channel-names (count args) nil))
+            channels-to-add (->> (clojure.core/map (fn [a s u n]
+                                                     (when (channel? a)
+                                                       [a s u n]))
+                                                   args
+                                                   (pad channel-sizes (count args) default-channel-size)
+                                                   (pad channel-unblocking (count args) nil)
+                                                   (pad channel-names (count args) nil))
                                  (remove nil?))]
-        (doall (map #(let [[channel size unblocking channel-name] %3]
-                       (let [size-to-use (or size default-channel-size)]
-                         (make-channel this (or channel-name
-                                                (str "arg-" %1))
-                                       %2 channel
-                                       (if unblocking
-                                         {:buffer? true
-                                          :size size-to-use
-                                          :unblocking unblocking}
-                                         size-to-use) nil nil)))
-                    (range)
-                    (repeatedly #(next-channel-id this))
-                    channels-to-add)))))
+        (doall (clojure.core/map #(let [[channel size unblocking channel-name] %3]
+                                    (let [size-to-use (or size default-channel-size)]
+                                      (make-channel this (or channel-name
+                                                             (str "arg-" %1))
+                                                    %2 channel
+                                                    (if unblocking
+                                                      {:buffer? true
+                                                       :size size-to-use
+                                                       :unblocking unblocking}
+                                                      size-to-use) nil nil)))
+                                 (range)
+                                 (repeatedly #(next-channel-id this))
+                                 channels-to-add)))))
 
   (add-root-thread [this thread-id]
     (mutate this "add-thread" #(alter thread-map step-threads/register-root-thread thread-id
@@ -638,11 +639,11 @@
   (multi-take-channel [this thread-id channels]
     (mutate this "multi-take-channel"
             #(let [channel-ids (->> channels
-                                    (map (partial step-channel/lookup-channel-id @step-channels))
+                                    (clojure.core/map (partial step-channel/lookup-channel-id @step-channels))
                                     sort)]
                (->> channel-ids
-                    (map (fn [c-id]
-                           (alter step-channels step-channel/register-take c-id thread-id)))
+                    (clojure.core/map (fn [c-id]
+                                        (alter step-channels step-channel/register-take c-id thread-id)))
                     doall)))
     (step-threads/get-control-channel @thread-map thread-id))
 
@@ -706,25 +707,25 @@
           timeout-names (step-timeout/all-timeout-names @timeout-map)]
       (-> {:threads (->> @thread-map
                          step-threads/running-thread-ids
-                         (map thread-names)
+                         (clojure.core/map thread-names)
                          sort
                          vec
                          util/no-empty)
            :parked-threads (->> @thread-map
                                 step-threads/parked-thread-ids
-                                (map thread-names)
+                                (clojure.core/map thread-names)
                                 sort
                                 vec
                                 util/no-empty)
            :channels (->> (step-channel/channel-ids @step-channels)
-                          (map channel-names)
+                          (clojure.core/map channel-names)
                           sort
                           vec
                           util/no-empty)
            :blocked-takes (-> @step-channels
                               step-channel/blocked-take-map
                               (util/update-keys thread-names)
-                              (util/update-vals #(-> (map channel-names %)
+                              (util/update-vals #(-> (clojure.core/map channel-names %)
                                                      sort
                                                      vec))
                               util/no-empty)
@@ -741,7 +742,7 @@
                               util/no-empty)
            :pending-threads (->> @thread-map
                                  step-threads/pending-thread-ids
-                                 (map thread-names)
+                                 (clojure.core/map thread-names)
                                  sort
                                  vec
                                  util/no-empty)
@@ -880,7 +881,7 @@
                                         (filter timeout-id?)
                                         (filter #(-> (step-channel/takes-available @step-channels %)
                                                      empty?))
-                                        (map #(alter timeout-map step-timeout/remove-timeout %))
+                                        (clojure.core/map #(alter timeout-map step-timeout/remove-timeout %))
                                         doall)
 
                                    (alter machine-log step-log/record-action
@@ -943,9 +944,9 @@
         (recur remaining-inputs))))
 
   (replay-history* [this inputs]
-    (let [options (merge (:options config)
-                         {:action-history? (step-log/action-history? @machine-log)
-                          :detailed-action-history? (step-log/detailed-action-history? @machine-log)})]
+    (let [options (clojure.core/merge (:options config)
+                                      {:action-history? (step-log/action-history? @machine-log)
+                                       :detailed-action-history? (step-log/detailed-action-history? @machine-log)})]
       (s/validate StepMachineOptionsParts options)
       (let [new-machine (construct-step-machine
                          options
@@ -959,7 +960,7 @@
     (when-not (step-log/action-history? @machine-log)
       (throw (RuntimeException. "set action-history? to true to step backwards")))
     (let [history (get-history* this)]
-      (replay-history* this (take (- (count history) n) history))))
+      (replay-history* this (clojure.core/take (- (count history) n) history))))
 
   (get-args* [this]
     (:args config))
@@ -993,7 +994,7 @@
            channel-names (channel-names-f this)]
        (util/update-map blocked-threads (fn [k v]
                                           [(thread-names k)
-                                           (set (map channel-names v))])))))
+                                           (set (clojure.core/map channel-names v))])))))
 
   (step-wait* [this]
     (add-waiter this listeners :step-listeners (get-in config [:options :step-timeout])))
@@ -1012,7 +1013,7 @@
   (clear-all-breakpoints* [this]
     (mutate this "clear-all-breakpoints*"
             #(->> (step-listen/breakpoints @listeners)
-                  (map (fn [breakpoint] (alter listeners step-listen/clear-breakpoint breakpoint)))
+                  (clojure.core/map (fn [breakpoint] (alter listeners step-listen/clear-breakpoint breakpoint)))
                   doall)))
 
   (get-timeouts* [this]
@@ -1152,9 +1153,9 @@
 (defn- make-arg-maker [args]
   (fn []
     (->> args
-         (map #(if (channel? %)
-                 (async/chan)
-                 %)))))
+         (clojure.core/map #(if (channel? %)
+                              (async/chan)
+                              %)))))
 
 (s/defn- construct-step-machine [options :- (s/maybe StepMachineOptionsParts)
                                  f :- s/Fn
@@ -1165,18 +1166,18 @@
                 machine (make-step-machine
                          f
                          args
-                         (merge options
-                                {:time-f (or time-f
-                                             #(System/currentTimeMillis))
-                                 :action-history? (if (nil? action-history?)
-                                                    false
-                                                    action-history?)
-                                 :detailed-action-history? (if (nil? detailed-action-history?)
-                                                             false
-                                                             detailed-action-history?)
-                                 :channel-history? (if (nil? channel-history?)
-                                                     false
-                                                     channel-history?)})
+                         (clojure.core/merge options
+                                             {:time-f (or time-f
+                                                          #(System/currentTimeMillis))
+                                              :action-history? (if (nil? action-history?)
+                                                                 false
+                                                                 action-history?)
+                                              :detailed-action-history? (if (nil? detailed-action-history?)
+                                                                          false
+                                                                          detailed-action-history?)
+                                              :channel-history? (if (nil? channel-history?)
+                                                                  false
+                                                                  channel-history?)})
                          (make-arg-maker args)
                          (when rand-seed (step-schedule/stm-rand rand-seed)))]
     (binding [*step-machine* machine
