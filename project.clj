@@ -1,4 +1,4 @@
-(defproject lonocloud/step.async "0.0.1"
+(defproject lonocloud/step.async "0.0.2"
   :description "Library for running core.async code in a deterministic, transparent fashion"
   :url "http://github.com/lonocloud/step.async/"
   :license {:name "Eclipse Public License - v 1.0"

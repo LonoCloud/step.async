@@ -1,20 +1,19 @@
-(ns lonocloud.step.async.test-step
+(ns lonocloud.step.test-async
   (:require [clojure.core.async :as async]
             [clojure.string :as str]
             [clojure.test :refer :all]
-            [lonocloud.step.async.step :as step
-             :refer [>! <! chan go step-machine step-wait step step-all
-                     quiesce-wait get-result chan-named go-named
-                     timeout-named state-trace complete-timeout
-                     dump-state-trace go-loop-named external-channel
-                     step-back get-args dump-channel-history
-                     dump-detailed-action-history dump-thread-names
-                     dump-named-blockers get-channel-contents timeout
-                     get-timeouts close! go-loop step-inputs
-                     replay-history get-history dump-state buffer
-                     sliding-buffer dropping-buffer >!! <!! put! take!
-                     set-breakpoint clear-breakpoint clear-all-breakpoints
-                     alts! print-step-machine]]
+            [lonocloud.step.async :as step :refer [>! <! chan go step-machine step-wait step step-all
+                                                   quiesce-wait get-result chan-named go-named
+                                                   timeout-named state-trace complete-timeout
+                                                   dump-state-trace go-loop-named external-channel
+                                                   step-back get-args dump-channel-history
+                                                   dump-detailed-action-history dump-thread-names
+                                                   dump-named-blockers get-channel-contents timeout
+                                                   get-timeouts close! go-loop step-inputs
+                                                   replay-history get-history dump-state buffer
+                                                   sliding-buffer dropping-buffer >!! <!! put! take!
+                                                   set-breakpoint clear-breakpoint
+                                                   clear-all-breakpoints alts! print-step-machine]]
             [lonocloud.step.async.util :as util]
             [vijual :as v]))
 

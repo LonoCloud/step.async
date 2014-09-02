@@ -1,4 +1,4 @@
-(ns lonocloud.step.async.step
+(ns lonocloud.step.async
   "Implemenation of the step machine library."
   (:refer-clojure :exclude [reduce map merge into take partition partition-by])
   (:require [clojure.core.async :as async]
