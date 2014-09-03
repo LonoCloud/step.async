@@ -1,4 +1,4 @@
-(ns lonocloud.step.test-async
+(ns lonocloud.step.test-step
   (:require [clojure.core.async :as async]
             [clojure.string :as str]
             [clojure.test :refer :all]
@@ -265,6 +265,8 @@
         (.setVisible f true))))
 
   ;; in vijual: set image-wrap-threshold to a much larger value, also add a (long...) around the args to the failing abs call on line 901
+
+  ;; increase image-wrap-threshold
 
   (show-trace t0)
 
