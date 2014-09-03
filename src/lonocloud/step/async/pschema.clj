@@ -1,4 +1,5 @@
 (ns lonocloud.step.async.pschema
+  (:refer-clojure :exclude [defn defn-])
   (:require [clojure.pprint :refer [pprint]]
             [schema.core :as s]))
 
@@ -44,7 +45,7 @@
 
 (def optional s/optional)
 
-(defn analyze-defn-params
+(clojure.core/defn analyze-defn-params
   "Produce [type comment params body]"
   [[a1 a2 a3 a4 :as params]]
   (if (= :- a1)
