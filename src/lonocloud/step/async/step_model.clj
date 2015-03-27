@@ -13,45 +13,26 @@
 
 ;; schema
 
-(deftype ChannelType []
-  s/Schema
-  (check [this x]
-    (when (not (satisfies? async-protocols/Channel x))
-      [x 'not "satisfies async Channel protocol"]))
-
-  (explain [this]
-    "satisfies async Channel protocol"))
+(s/satisfies-protocol ChannelType async-protocols/Channel)
 
 (def Channel (ChannelType.))
 
-(deftype ReadPortType []
-  s/Schema
-  (check [this x]
-    (when (not (satisfies? async-protocols/ReadPort x))
-      [x 'not "satisfies async ReadPort protocol"]))
-
-  (explain [this]
-    "satisfies async ReadPort protocol"))
+(s/satisfies-protocol ReadPortType async-protocols/ReadPort)
 
 (def ReadPort (ReadPortType.))
 
-(deftype WritePortType []
-  s/Schema
-  (check [this x]
-    (when (not (satisfies? async-protocols/WritePort x))
-      [x 'not "satisfies async WritePort protocol"]))
-
-  (explain [this]
-    "satisfies async WritePort protocol"))
+(s/satisfies-protocol WritePortType async-protocols/WritePort)
 
 (def WritePort (WritePortType.))
 
 (deftype ThreadIdType []
   s/Schema
-  (check [this x]
-    (when (not (and (integer? x)
-                    (< x first-channel-id)))
-      [x 'not "go thread-id"]))
+  (walker [this]
+    (fn [x]
+      (if (and (integer? x)
+               (< x first-channel-id))
+        x
+        (s/error x))))
 
   (explain [this]
     "go thread-id"))
@@ -60,10 +41,12 @@
 
 (deftype ChannelIdType []
   s/Schema
-  (check [this x]
-    (when (not (and (integer? x)
-                    (>= x first-channel-id)))
-      [x 'not "channel-id"]))
+  (walker [this]
+    (fn [x]
+      (if (and (integer? x)
+               (>= x first-channel-id))
+        x
+        (s/error x))))
 
   (explain [this]
     "channel-id"))
@@ -81,9 +64,11 @@
 
 (deftype TimeoutIdType []
   s/Schema
-  (check [this x]
-    (when (not (timeout-id? x))
-      [x 'not "timeout-id"]))
+  (walker [this]
+    (fn [x]
+      (if (timeout-id? x)
+        x
+        (s/error x))))
 
   (explain [this]
     "timeout-id"))

@@ -11,4 +11,4 @@
                  [org.clojure/tools.logging "0.2.6"]
                  [org.clojure/algo.generic "0.1.1"]
                  [cc.artifice/vijual "0.2.5"]
-                 [prismatic/schema "0.1.8"]])
+                 [prismatic/schema "0.4.0"]])
