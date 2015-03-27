@@ -23,9 +23,9 @@
 (defn foo []
   (let [c (chan)]
     (go
-     (>! c 100))
+      (>! c 100))
     (go
-     (<! c))))
+      (<! c))))
 
 (deftest demo-10
   ;; invoke the function the "normal" way and the async step machine is not used
@@ -519,12 +519,12 @@
                   (let [c (chan 10)
                         c2 (chan-builder)
                         reader (go
-                                (<! c))
+                                 (<! c))
                         writer (do
                                  (go (>! c 100))
                                  (go (>! c2 200)))
                         reader2 (go
-                                 (<! c2))]
+                                  (<! c2))]
                     reader))
         machine ((step-machine) async-f)]
     (step-all machine)
@@ -535,10 +535,10 @@
                   (let [c (chan 10)
                         c2 (chan-builder)
                         reader (go
-                                (<! c))
+                                 (<! c))
                         writer (go (>! c 100))
                         reader2 (go
-                                 (<! c2))]
+                                  (<! c2))]
                     reader))
         machine ((step-machine) async-f)]
     (step-all machine)
@@ -567,7 +567,7 @@
   (is (= :all-blocked
          (let [async-f (fn [c]
                          (go
-                          (<! c)))
+                           (<! c)))
                machine ((step-machine) async-f (async/chan))]
            (step-all machine)
            (quiesce-wait machine)))))
@@ -576,10 +576,10 @@
   (let [async-f (fn [c]
                   (let [c2 (chan-builder)
                         reader (go
-                                (<! c))
+                                 (<! c))
                         writer (go (>! c2 200))
                         reader2 (go
-                                 (<! c2))]
+                                  (<! c2))]
                     reader))
         c-in (async/chan)
         machine ((step-machine) async-f c-in)
@@ -596,10 +596,10 @@
   (let [async-f (fn [c]
                   (let [c2 (chan-builder)
                         reader (go
-                                (<! c))
+                                 (<! c))
                         writer (go (>! c2 200))
                         reader2 (go
-                                 (<! c2))]
+                                  (<! c2))]
                     reader))
         c-in (async/chan)
         machine ((step-machine) async-f c-in)
@@ -609,7 +609,7 @@
            (quiesce-wait machine)))
     (is (= :all-exited
            (do (async/<!! (async/go
-                           (async/>! in 100)))
+                            (async/>! in 100)))
                (step-all machine)
                (quiesce-wait machine))))))
 
@@ -864,10 +864,10 @@
         c4 (async/chan 10)]
     (let [async-f (fn [c1 c2 c3 c4]
                     (go
-                     ;; if multiple messages are delivered "simultaneously" from inside
-                     ;; machine then these are delivered deterministicly
-                     (>! c2 200)
-                     (>! c4 400))
+                      ;; if multiple messages are delivered "simultaneously" from inside
+                      ;; machine then these are delivered deterministicly
+                      (>! c2 200)
+                      (>! c4 400))
                     (go (alts! [c1 c2 c3 c4])))
           machine ((step-machine :channel-sizes [10 10 10 10]) async-f c1 c2 c3 c4)]
       (step-all machine)
@@ -1028,7 +1028,7 @@
   (let [async-f (fn []
                   (let [c (chan 10)
                         reader (go
-                                [(<! c)])
+                                 [(<! c)])
                         writer (go (close! c))]
                     reader))
         machine ((step-machine) async-f)]
@@ -1069,9 +1069,9 @@
   (let [async-f (fn []
                   (let [c (chan 10)
                         reader-1 (go
-                                  [(<! c)])
+                                   [(<! c)])
                         reader-2 (go
-                                  [(<! c)])
+                                   [(<! c)])
                         writer (go (close! c))]
                     [reader-1 reader-2]))
         machine ((step-machine) async-f)]
@@ -1086,16 +1086,16 @@
 (deftest test-go-loop
   (let [async-f (fn [c-in c-out]
                   (go-loop [x (<! c-in)]
-                           (>! c-out (* 2 x))
-                           (recur (<! c-in))))]
+                    (>! c-out (* 2 x))
+                    (recur (<! c-in))))]
 
     ;; use via plain core.async
     (let [c-in (async/chan)
           c-out (async/chan)]
       (async-f c-in c-out)
       (async/go
-       (async/>! c-in 3)
-       (async/>! c-in 7))
+        (async/>! c-in 3)
+        (async/>! c-in 7))
       (is (= [6 14]
              [(async/<!! c-out)
               (async/<!! c-out)])))
@@ -1161,18 +1161,18 @@
   (let [async-f (fn [c-in]
                   (let [c2 (chan 10)]
                     (go (go
-                         ;; this thread is trying to read from input channel repeatedly
-                         (let [x (<! c-in)
-                               y (<! c-in)
-                               z (<! c-in)]
-                           (>! c2 [10 x])
-                           (>! c2 [11 y])
-                           (>! c2 [12 z])))
+                          ;; this thread is trying to read from input channel repeatedly
+                          (let [x (<! c-in)
+                                y (<! c-in)
+                                z (<! c-in)]
+                            (>! c2 [10 x])
+                            (>! c2 [11 y])
+                            (>! c2 [12 z])))
 
                         (go
-                         ;; this thread is trying to read from the same input channel
-                         (>! c2 [20 (<! c-in)])
-                         (>! c2 [21 (<! c-in)]))
+                          ;; this thread is trying to read from the same input channel
+                          (>! c2 [20 (<! c-in)])
+                          (>! c2 [21 (<! c-in)]))
 
                         [(<! c2) (<! c2) (<! c2) (<! c2)])))
         c-in (async/chan 10)
@@ -1207,15 +1207,15 @@
   (let [async-f (fn [c-in]
                   (let [c2 (chan 10)]
                     (go (go
-                         ;; this thread is trying to read from input channel repeatedly
-                         (>! c2 [10 (<! c-in)])
-                         (>! c2 [11 (<! c-in)])
-                         (>! c2 [12 (<! c-in)]))
+                          ;; this thread is trying to read from input channel repeatedly
+                          (>! c2 [10 (<! c-in)])
+                          (>! c2 [11 (<! c-in)])
+                          (>! c2 [12 (<! c-in)]))
 
                         (go
-                         ;; this thread is trying to read from the same input channel
-                         (>! c2 [20 (<! c-in)])
-                         (>! c2 [21 (<! c-in)]))
+                          ;; this thread is trying to read from the same input channel
+                          (>! c2 [20 (<! c-in)])
+                          (>! c2 [21 (<! c-in)]))
 
                         [(<! c2) (<! c2) (<! c2) (<! c2)])))
         c-in (async/chan 10)
@@ -1249,14 +1249,14 @@
   (let [async-f (fn [c-in]
                   (let [c2 (chan 10)]
                     (go (go
-                         ;; same as test above, but intersperse reads with writes
-                         (>! c2 [10 (<! c-in)])
-                         (>! c2 [11 (<! c-in)])
-                         (>! c2 [12 (<! c-in)]))
+                          ;; same as test above, but intersperse reads with writes
+                          (>! c2 [10 (<! c-in)])
+                          (>! c2 [11 (<! c-in)])
+                          (>! c2 [12 (<! c-in)]))
 
                         (go
-                         (>! c2 [20 (<! c-in)])
-                         (>! c2 [21 (<! c-in)]))
+                          (>! c2 [20 (<! c-in)])
+                          (>! c2 [21 (<! c-in)]))
 
                         [(<! c2) (<! c2) (<! c2) (<! c2)])))
         c-in (async/chan 10)
@@ -1288,7 +1288,7 @@
 (deftest test-<!!
   (let [async-f (fn [c]
                   (go
-                   (>! c 100)))
+                    (>! c 100)))
         c (async/chan 10)
         machine ((step-machine :channel-sizes [10]) async-f c)
         out (external-channel machine c)]
@@ -1300,7 +1300,7 @@
 (deftest test-<!!-close
   (let [async-f (fn [c]
                   (go
-                   (close! c)))
+                    (close! c)))
         c (async/chan 10)
         machine ((step-machine :channel-sizes [10]) async-f c)
         out (external-channel machine c)]
@@ -1316,7 +1316,7 @@
 (deftest test-take!
   (let [async-f (fn [c]
                   (go
-                   (>! c 100)))
+                    (>! c 100)))
         c (async/chan 10)
         machine ((step-machine :channel-sizes [10]) async-f c)
         out (external-channel machine c)]
@@ -1331,7 +1331,7 @@
 (deftest test-take!-on-same-thread-by-default
   (let [async-f (fn [c]
                   (go
-                   (>! c 100)))
+                    (>! c 100)))
         c (async/chan 10)
         machine ((step-machine :channel-sizes [10]) async-f c)
         out (external-channel machine c)]
@@ -1346,7 +1346,7 @@
 (deftest test-take!-different-thread-if-not-available
   (let [async-f (fn [c]
                   (go
-                   (>! c 100)))
+                    (>! c 100)))
         c (async/chan 10)
         machine ((step-machine :channel-sizes [10]) async-f c)
         out (external-channel machine c)]
@@ -1363,7 +1363,7 @@
 (deftest test-take!-on-same-thread-explicit
   (let [async-f (fn [c]
                   (go
-                   (>! c 100)))
+                    (>! c 100)))
         c (async/chan 10)
         machine ((step-machine :channel-sizes [10]) async-f c)
         out (external-channel machine c)]
@@ -1379,7 +1379,7 @@
 (deftest test-take!-on-different-thread
   (let [async-f (fn [c]
                   (go
-                   (>! c 100)))
+                    (>! c 100)))
         c (async/chan 10)
         machine ((step-machine :channel-sizes [10]) async-f c)
         out (external-channel machine c)]
@@ -1397,7 +1397,7 @@
 (deftest test-take!-close
   (let [async-f (fn [c]
                   (go
-                   (close! c)))
+                    (close! c)))
         c (async/chan 10)
         machine ((step-machine :channel-sizes [10]) async-f c)
         out (external-channel machine c)]
@@ -1412,7 +1412,7 @@
 (deftest test-put!
   (let [async-f (fn [c d]
                   (go
-                   (>! d (<! c))))
+                    (>! d (<! c))))
         c (async/chan)
         d (async/chan 10)
         machine ((step-machine :channel-history? true
@@ -1427,7 +1427,7 @@
 (deftest test-put!-with-fn
   (let [async-f (fn [c d]
                   (go
-                   (>! d (<! c))))
+                    (>! d (<! c))))
         c (async/chan)
         d (async/chan 10)
         machine ((step-machine :channel-sizes [nil 10]) async-f c d)
@@ -1449,7 +1449,7 @@
 (deftest test-put!-with-fn-same-thread-by-default
   (let [async-f (fn [c d]
                   (go
-                   (>! d (<! c))))
+                    (>! d (<! c))))
         c (async/chan)
         d (async/chan 10)
         machine ((step-machine :channel-sizes [nil 10]) async-f c d)
@@ -1472,7 +1472,7 @@
 (deftest test-put!-with-fn-different-thread-if-no-available
   (let [async-f (fn [c d]
                   (go
-                   (>! d (<! c))))
+                    (>! d (<! c))))
         c (async/chan)
         d (async/chan 10)
         machine ((step-machine :channel-sizes [nil 10]) async-f c d)
@@ -1494,7 +1494,7 @@
 (deftest test-put!-with-fn-same-thread-explicit
   (let [async-f (fn [c d]
                   (go
-                   (>! d (<! c))))
+                    (>! d (<! c))))
         c (async/chan)
         d (async/chan 10)
         machine ((step-machine :channel-sizes [nil 10]) async-f c d)
@@ -1519,7 +1519,7 @@
 (deftest test-put!-with-fn-different-thread-explicit
   (let [async-f (fn [c d]
                   (go
-                   (>! d (<! c))))
+                    (>! d (<! c))))
         c (async/chan)
         d (async/chan 10)
         machine ((step-machine :channel-sizes [nil 10]) async-f c d)
@@ -1549,8 +1549,8 @@
 (deftest test-step-inputs
   (let [async-f (fn [c1 c2]
                   (go-loop [v (<! c1)]
-                           (>! c2 (* 10 v))
-                           (recur (<! c1))))
+                    (>! c2 (* 10 v))
+                    (recur (<! c1))))
         c1 (async/chan)
         c2 (async/chan 10)
         machine ((step-machine :channel-sizes [1 10]) async-f c1 c2)
@@ -1570,8 +1570,8 @@
 (deftest test-step-input-history
   (let [async-f (fn [c1 c2]
                   (go-loop [v (<! c1)]
-                           (>! c2 (* 10 v))
-                           (recur (<! c1))))
+                    (>! c2 (* 10 v))
+                    (recur (<! c1))))
         c1 (async/chan)
         c2 (async/chan)
         machine ((step-machine :channel-sizes [1 10]
@@ -1659,7 +1659,7 @@
 (deftest test-non-channel-args
   (let [async-f (fn [x c y]
                   (go
-                   (>! c (+ x y))))
+                    (>! c (+ x y))))
         c (async/chan 10)
         machine ((step-machine :channel-sizes [nil 10 nil]
                                :channel-names [nil "c" nil]) async-f 2 c 3)]
@@ -1707,8 +1707,8 @@
 (deftest test-step-timeout
   (let [async-f (fn []
                   (go
-                   ;; async fn takes a long time
-                   (Thread/sleep 1000)))
+                    ;; async fn takes a long time
+                    (Thread/sleep 1000)))
         ;; set the step timeout very low
         machine ((step-machine :step-timeout 1) async-f)]
     (is (thrown-with-msg? RuntimeException #"step-wait timed out"
@@ -1881,7 +1881,7 @@
                     (go (>! d (inc (<! c))))
 
                     (go
-                     (>!! c 100))))
+                      (>!! c 100))))
         d (chan 10)
         machine ((step-machine :channel-sizes [10]) async-f d)
         out (external-channel machine d)]
@@ -1895,7 +1895,7 @@
                   (let [c (chan 10)]
                     (go (>! c 100))
                     (go
-                     (<!! c))))
+                      (<!! c))))
         machine ((step-machine :channel-sizes [10]) async-f)]
     (step-all machine)
     (quiesce-wait machine)
@@ -1908,7 +1908,7 @@
                     (go (>! d (inc (<! c))))
 
                     (go
-                     (put! c 100))))
+                      (put! c 100))))
         d (chan 10)
         machine ((step-machine :channel-sizes [10]) async-f d)
         out (external-channel machine d)]
@@ -1923,9 +1923,9 @@
                     (go (>! c 100))
 
                     (go
-                     (let [result (promise)]
-                       (take! c #(deliver result %))
-                       result))))
+                      (let [result (promise)]
+                        (take! c #(deliver result %))
+                        result))))
         machine ((step-machine :channel-sizes [10]) async-f)]
     (step-all machine)
     (quiesce-wait machine)
@@ -1938,7 +1938,7 @@
                     (go (>! c 100))
 
                     (go
-                     (<! c))))
+                      (<! c))))
         machine ((step-machine :channel-sizes [10]) async-f)]
     (set-breakpoint machine (constantly true))
     (step-all machine)
@@ -1968,7 +1968,7 @@
                     (go (>! c 100))
 
                     (go
-                     (<! c))))
+                      (<! c))))
         machine ((step-machine :channel-sizes [10]) async-f)]
     (set-breakpoint machine (fn [state]
                               (not (empty? (:blocked-takes state)))))
@@ -1989,7 +1989,7 @@
                     (go (>! c 100))
 
                     (go
-                     (<! c))))
+                      (<! c))))
         machine ((step-machine :channel-sizes [10]) async-f)
         breakpoint-f (fn [state]
                        (not (empty? (:blocked-takes state))))]
@@ -2012,7 +2012,7 @@
                     (go (>! c 100))
 
                     (go
-                     (<! c))))
+                      (<! c))))
         machine ((step-machine :channel-sizes [10]) async-f)
         breakpoint-f (fn [state]
                        (not (empty? (:blocked-takes state))))]
@@ -2036,7 +2036,7 @@
                     (go (>! c 100))
 
                     (go
-                     (<! c))))
+                      (<! c))))
         machine ((step-machine :channel-sizes [10]) async-f)]
     (set-breakpoint machine  (fn [state]
                                (not (empty? (:blocked-takes state)))))
@@ -2302,10 +2302,10 @@
                         c (chan 10)]
                     (step/onto-chan c x)
                     (go
-                     [(<! c)
-                      (<! c)
-                      (<! c)
-                      (<! c)])))
+                      [(<! c)
+                       (<! c)
+                       (<! c)
+                       (<! c)])))
         machine ((step-machine) async-f)]
     (step-all machine)
     (is (= :all-exited (quiesce-wait machine)))
@@ -2318,10 +2318,10 @@
                   (let [x [1 2 3]
                         c (step/to-chan x)]
                     (go
-                     [(<! c)
-                      (<! c)
-                      (<! c)
-                      (<! c)])))
+                      [(<! c)
+                       (<! c)
+                       (<! c)
+                       (<! c)])))
         machine ((step-machine) async-f)]
     (step-all machine)
     (is (= :all-exited (quiesce-wait machine)))
@@ -2435,23 +2435,23 @@
                     (step/tap m1 c2)
                     (step/tap m1 c3)
                     (go
-                     (>! c1 10)
-                     (<! sig)
-                     (step/untap m1 c3)
-                     (>! c1 20)
-                     (close! c1)
-                     (>! c3 30))
+                      (>! c1 10)
+                      (<! sig)
+                      (step/untap m1 c3)
+                      (>! c1 20)
+                      (close! c1)
+                      (>! c3 30))
                     (go
-                     (>! out [(<! c2)
-                              (<! c2)
-                              (<! c2)]))
+                      (>! out [(<! c2)
+                               (<! c2)
+                               (<! c2)]))
                     (go
-                     (>! out [(<! c3)
-                              (>! sig :done)
-                              (<! c3)]))
+                      (>! out [(<! c3)
+                               (>! sig :done)
+                               (<! c3)]))
                     (go
-                     (set [(<! out)
-                           (<! out)]))))
+                      (set [(<! out)
+                            (<! out)]))))
         machine ((step-machine) async-f)]
     (step-all machine)
     (is (= :all-exited (quiesce-wait machine)))
@@ -2471,22 +2471,22 @@
                     (step/tap m1 c2)
                     (step/tap m1 c3)
                     (go
-                     (>! c1 10)
-                     (<! sig)
-                     (<! sig)
-                     (step/untap-all m1)
-                     (>! c1 20)
-                     (close! c1)
-                     (>! c3 30)
-                     (>! c2 40))
+                      (>! c1 10)
+                      (<! sig)
+                      (<! sig)
+                      (step/untap-all m1)
+                      (>! c1 20)
+                      (close! c1)
+                      (>! c3 30)
+                      (>! c2 40))
                     (go
-                     (>! out [(<! c2)
-                              (>! sig :done)
-                              (<! c2)]))
+                      (>! out [(<! c2)
+                               (>! sig :done)
+                               (<! c2)]))
                     (go
-                     (>! out [(<! c3)
-                              (>! sig :done)
-                              (<! c3)]))
+                      (>! out [(<! c3)
+                               (>! sig :done)
+                               (<! c3)]))
                     (go (set [(<! out)
                               (<! out)]))))
         machine ((step-machine) async-f)]
@@ -2730,13 +2730,13 @@
                     (step/sub p1 :joe c-j)
                     (step/sub p1 :bob c-b)
                     (go
-                     (>! c1 {:name :joe
-                             :id 10})
-                     (>! c1 {:name :joe
-                             :id 20})
-                     (>! c1 {:name :bob
-                             :id 30})
-                     (close! c1))
+                      (>! c1 {:name :joe
+                              :id 10})
+                      (>! c1 {:name :joe
+                              :id 20})
+                      (>! c1 {:name :bob
+                              :id 30})
+                      (close! c1))
                     (go [(<! c-j)
                          (<! c-j)
                          (<! c-b)
