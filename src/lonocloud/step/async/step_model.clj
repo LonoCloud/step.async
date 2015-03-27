@@ -32,7 +32,7 @@
       (if (and (integer? x)
                (< x first-channel-id))
         x
-        (s/error x))))
+        (s/error [x 'not "go thread-id"]))))
 
   (explain [this]
     "go thread-id"))
@@ -46,7 +46,7 @@
       (if (and (integer? x)
                (>= x first-channel-id))
         x
-        (s/error x))))
+        (s/error [x 'not "channel-id"]))))
 
   (explain [this]
     "channel-id"))
@@ -68,7 +68,7 @@
     (fn [x]
       (if (timeout-id? x)
         x
-        (s/error x))))
+        (s/error [x 'not "timeout-id"]))))
 
   (explain [this]
     "timeout-id"))

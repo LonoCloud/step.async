@@ -13,7 +13,7 @@
 
 (ns-unmap *ns* 'Number)
 
-(def Number s/Num)
+(def Num s/Num)
 
 (def maybe s/maybe)
 
@@ -64,7 +64,7 @@
        (clojure.core/fn [x#]
          (if (satisfies? ~p x#)
            x#
-           (schema-utils/error x#))))
+           (schema-utils/error [x# 'not (str (:on ~p))]))))
 
      (explain [this#]
        (str (:on ~p)))))
@@ -263,7 +263,7 @@
                           (get-schema-of x))
                         schema)
         x
-        (schema-utils/error x))))
+        (schema-utils/error [x 'not (str "typed function " schema)]))))
 
   (explain [this]
     schema))
